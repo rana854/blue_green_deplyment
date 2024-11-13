@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blue-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: bluegreen-app
+      env: blue
+  template:
+    metadata:
+      labels:
+        app: bluegreen-app
+        env: blue
+    spec:
+      containers:
+      - name: bluegreen-app
+        image: ranatarek/mybluegreen-app:blue
+        ports:
+        - containerPort: 5000

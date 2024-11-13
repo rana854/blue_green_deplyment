@@ -1,0 +1,79 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Clone Repository') {
+            steps {
+            git branch: 'main', url: 'https://github.com/rana854/blue_green_deplyment.git'
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    def imageTag = "ranatarek/mybluegreen-app:blue"
+                    bat "docker build -t ${imageTag}  ./blue_green_deployment_project "
+                }
+            }
+        }
+        stage('Login to Docker Hub') {
+            steps {
+                    script {
+                     
+                    withCredentials([usernamePassword(credentialsId: 'docker_1_Hub', 
+                    usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        bat "docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%"
+                    }
+            }
+        }
+        }
+        stage('Push Docker Image To Docker Hub') {
+            steps {
+                script {
+                    
+                        def imageTag = "ranatarek/mybluegreen-app:blue"
+                        bat "docker push ${imageTag}" 
+                    
+                }
+            }
+        }
+        
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                   
+                    bat "kubectl --kubeconfig=\"C:\\Users\\AL-fares\\.kube\\config\" apply -f \"blue_green_deployment_project/blue-deployment.yaml\""
+                 
+                }
+            }
+        }
+
+    
+         stage('Switch Traffic to New Version') {
+            steps {
+                script {
+                    // Define current environment (initially green), and set new environment
+                    def currentEnv = "green" // Set the current live environment, can be stored and retrieved dynamically
+                    bat "echo Current environment is: ${currentEnv}"
+                    def newEnv = (currentEnv == "green") ? "blue" : "green" // Toggle between blue and green
+                    // Run kubectl patch command using bat to switch traffic to the new version's service
+ bat "kubectl --kubeconfig=\"C:\\Users\\AL-fares\\.kube\\config\" apply -f \"blue_green_deployment_project/patch.yaml\""
+              bat '''
+    kubectl --kubeconfig="C:\\Users\\AL-fares\\.kube\\config" patch ingress bluegreen-ingress --patch-file=blue_green_deployment_project/patch.yaml
+'''
+
+ bat "kubectl --kubeconfig=\"C:\\Users\\AL-fares\\.kube\\config\" get ingress bluegreen-ingress -o yaml"
+                 
+                
+                    // Set the current environment to the new environment (for tracking or future runs)
+                    currentEnv = newEnv
+
+                    bat 'echo Pipeline execution completed.'
+
+                    bat "echo Current environment is: ${currentEnv}"     
+                  
+                }
+            }
+        }
+    }
+    
+}
