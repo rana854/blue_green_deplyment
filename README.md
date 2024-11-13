@@ -2,12 +2,6 @@
 
 This repository demonstrates how to set up a Blue-Green Deployment strategy for a microservices application using Jenkins, Docker, and Kubernetes (Minikube). The goal is to minimize downtime by deploying a new version of the application in a "blue" environment while keeping the "green" (current live version) active. Once the blue environment is tested and verified, traffic is switched to the new version.
 
-## The repository includes:
-- A **Jenkins pipeline** to automate the build, test, and deployment process.
-- **Docker** images to containerize the microservices.
-- **Kubernetes (Minikube)** for the orchestration of the application containers.
-- An **Ingress Controller** for routing traffic to the correct environment (Blue or Green).
-
 ## Prerequisites
 
 Before you begin, ensure you have the following tools installed and configured:
