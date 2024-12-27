@@ -51,25 +51,14 @@ pipeline {
          stage('Switch Traffic to New Version') {
             steps {
                 script {
-                    // Define current environment (initially green), and set new environment
-                    def currentEnv = "green" // Set the current live environment, can be stored and retrieved dynamically
-                    bat "echo Current environment is: ${currentEnv}"
-                    def newEnv = (currentEnv == "green") ? "blue" : "green" // Toggle between blue and green
-                    // Run kubectl patch command using bat to switch traffic to the new version's service
+                 
+                    // Run kubectl patch command to switch traffic to the new version's service
  bat "kubectl --kubeconfig=\"C:\\Users\\AL-fares\\.kube\\config\" apply -f \"blue_green_deployment_project/patch.yaml\""
               bat '''
     kubectl --kubeconfig="C:\\Users\\AL-fares\\.kube\\config" patch ingress bluegreen-ingress --patch-file=blue_green_deployment_project/patch.yaml
 '''
 
  bat "kubectl --kubeconfig=\"C:\\Users\\AL-fares\\.kube\\config\" get ingress bluegreen-ingress -o yaml"
-                 
-                
-                    // Set the current environment to the new environment (for tracking or future runs)
-                    currentEnv = newEnv
-
-                    bat 'echo Pipeline execution completed.'
-
-                    bat "echo Current environment is: ${currentEnv}"     
                   
                 }
             }
